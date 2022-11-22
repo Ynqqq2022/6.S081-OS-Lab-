@@ -655,3 +655,15 @@ procdump(void)
     printf("\n");
   }
 }
+
+uint64 get_proc_count(){
+  uint64 n=0;
+  struct proc* p;
+  for(p = proc; p < &proc[NPROC]; p++) {
+    acquire(&p->lock);
+    if(p->state != UNUSED) 
+      n=n+1;
+    release(&p->lock);
+  }
+  return n;
+}

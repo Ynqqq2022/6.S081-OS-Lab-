@@ -81,6 +81,39 @@ int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
+  uint64 base;
+  int len;
+  uint64 mask_addr;
+  if(argaddr(0,&base)<0) { 
+    printf("argint 0 :%x\n",base);
+    return -1;
+  }
+  if(argint(1, &len) < 0)
+    return -1;
+  if(argaddr(2,&mask_addr)<0) { 
+    printf("argint 0 :%x\n",mask_addr);
+    return -1;
+  }
+  if(len < 0 || len > 32)
+    return -1;
+  uint64 bitmask=0;
+  pte_t *pte;
+  struct proc *p = myproc();
+  for(int i=0;i<len;i++){
+    if(base >= MAXVA)
+      return -1;
+    pte = walk(p->pagetable,base,0);
+    if(pte==0)
+      return -1;
+    if(*pte & PTE_A){
+      bitmask |= (1L<<i);
+      *pte &= ~PTE_A;
+    }
+    base += PGSIZE;
+  }
+  
+  if(copyout(p->pagetable,mask_addr,(char*)&bitmask,sizeof(bitmask))<0)
+    return -1;
   return 0;
 }
 #endif
